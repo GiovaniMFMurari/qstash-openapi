@@ -1,0 +1,47 @@
+{
+  "name": "qstash-openapi",
+  "version": "0.0.1",
+  "description": "OpenAPI based Qstash API client",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "prebuild": "npm run gen:v1 && npm run gen:v2 && rm -rf dist/",
+    "build": "npm run prebuild && tsc",
+    "gen:v1": "openapi --input openapi/qstash-v1.yaml --indent 2 --output lib/generated/v1 --name QStashAPIV1",
+    "gen:v2": "openapi --input openapi/qstash-v1.yaml --indent 2 --output lib/generated/v2 --name QStashAPIV2",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GiovaniMFMurari/qstash-openapi"
+  },
+  "keywords": [
+    "qstash",
+    "api",
+    "client",
+    "swagger",
+    "openapi",
+    "v1",
+    "v2",
+    "typescript"
+  ],
+  "author": "GiovaniMFMurari",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/GiovaniMFMurari/qstash-openapi/issues"
+  },
+  "homepage": "https://github.com/GiovaniMFMurari/qstash-openapi#readme",
+  "dependencies": {
+    "dotenv": "^16.0.3"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.0",
+    "@types/node": "^18.15.3",
+    "@typescript-eslint/eslint-plugin": "^5.58.0",
+    "@typescript-eslint/parser": "^5.58.0",
+    "eslint": "^8.42.0",
+    "jest": "^29.4.3",
+    "openapi-typescript-codegen": "^0.23.0",
+    "typescript": "latest"
+  }
+}
