@@ -209,6 +209,27 @@ paths:
                   $ref: "#/components/schemas/Schedule"
 
   /schedules/{scheduleId}:
+    get:
+      tags:
+        - schedules
+      operationId: get
+      security:
+        - bearerAuth: []
+      summary: This endpoint retrieve a schedule.
+      parameters:
+        - in: path
+          name: scheduleId
+          schema:
+            type: string
+          required: true
+          description: The unique id of the schedule you want to retrieve
+      responses:
+        202:
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Schedule"
     delete:
       tags:
         - schedules
@@ -226,11 +247,6 @@ paths:
       responses:
         202:
           description: success
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/DeleteScheduleResponse"
-
 
 components:
   schemas:
@@ -255,89 +271,38 @@ components:
     Schedule:
       type: object
       example: | 
-        { "scheduleId": "scd_5mA1sL5RX6YphLfBnRTtiYPzZ8pt",
-          "cron": "0 * * * *",
-          "createdAt": 1691245856333,
-          "content": {
-            "header": {
-              "Content-Type": ["application/json"]
-            },
-            "body": "{\"message\":\"hello\"}"
+        {
+          "createdAt": 1692902175969,
+          "id": "scd_5SXLu9x8j7rSc6Rm7F7bfAbpGExm",
+          "cron": "0 2 * * *",
+          "destination": "https://qa1-onboarding.medsimples.dev/api/",
+          "header": {
+              "Content-Type": {
+                  "values": [
+                      "application/json"
+                  ]
+              }
           },
-          "destination": {
-            "topic": {
-              "topicId": "tpc_7EfEryZiheEKzpMuvjYdhhhbNNJA",
-              "name": "test",
-              "endpoints": [
-                {
-                  "endpointId": "ept_6j7BNZus3ZyPy6P7QtLUMCC3Rq7h",
-                  "url": "https://www.example.com",
-                  "topicId": "tpc_7EfEryZiheEKzpMuvjYdhhhbNNJA"
-                }
-              ],
-            "type": "url",
-            "url": "https://www.example.com"
-          },
-          "settings": {
-            "retries": 3
-          }
+          "body": "{\"testId\":1}",
+          "retries": 3
         }
       required:
         - scheduleId
       properties:
-        scheduleId: 
-          type: string
-        cron: 
-          type: string
         createdAt:
           type: integer
-        content:
-          type: object
-          properties:
-            header: 
-              type: object
-            body: 
-              type: string
-        destination:
-          type: object
-          properties:
-            type: 
-              type: string
-            url:
-              type: string
-            topic:
-              type: object
-              properties:
-                topicId: 
-                  type: string
-                name: 
-                  type: string
-                endpoints: 
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      endpointId: 
-                        type: string
-                      url:
-                        type: string
-                      topicId:
-                        type: string
-                type: 
-                  type: string
-                url: 
-                  type: string
-        settings:
-          type: object
-          properties:
-            retries: 
-              type: integer
-    DeleteScheduleResponse:
-      type: object
-      properties:
-        status:
+        id:
           type: string
-      example: { "status": "accepted" }
+        cron:
+          type: string
+        destination:
+          type: string
+        header:
+          type: object
+        body:
+          type: string
+        retries:
+          type: string
   securitySchemes:
     bearerAuth:
       type: http
