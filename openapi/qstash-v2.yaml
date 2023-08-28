@@ -207,6 +207,158 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Schedule"
+  /schedules/{destination}:
+    post:
+      tags:
+        - schedules
+      operationId: create
+      security:
+        - bearerAuth: []
+      summary: This endpoint returns a list of all schedules.
+      parameters:
+        - in: path
+          name: destination
+          schema:
+            type: string
+          required: true
+          description: Destination can either be a topic name or id that you configured in the Upstash console, or a valid url where the message gets sent to. Make sure the url is prefixed with a valid protocol (http:// or https://)
+
+        - in: header
+          name: Content-Type
+          schema:
+            type: string
+          required: true
+          description: |
+            ContentType is the MIME type of the message.
+            We highly recommend sending a Content-Type header along, as this will help your destination API to understand the content of the message.
+            Example: application/json, application/xml, application/octet-stream, text/plain
+        
+        - in: header
+          name: Upstash-Deduplication-Id
+          schema:
+            type: string
+          required: false
+          description: |
+            Provide a unique id for deduplication.
+
+            This id will be used to detect duplicate messages. If a duplicate message is detected, the request will be accepted but not enqueued. Deduplication ids must not contain : or whitespace.
+
+            We store deduplication ids for 90 days. Afterwards it is possible that the message with the same deduplication id is delivered again.
+
+            When scheduling a message, the deduplication happens before the schedule is created.
+
+        - in: header
+          name: Upstash-Content-Based-Deduplication
+          schema:
+            type: boolean
+          required: false
+          description: |
+            If true, the message content will get hashed and used as deduplication id. If a duplicate message is detected, the request will be accepted but not enqueued.
+
+            The content based hash includes the following values:
+
+            All headers prefixed with Upstash this includes all custom headers you are sending.
+
+            The entire raw request body
+
+            The destination from the url path
+
+            We store deduplication ids for 90 days. Afterwards it is possible that the message with the same deduplication id is delivered again.
+
+            When scheduling a message, the deduplication happens before the schedule is created. Messages created by schedules are not deduplicated.
+
+        - in: header
+          name: Upstash-Method
+          schema:
+            type: string
+          required: false
+          description: |
+            The HTTP method to use when sending a webhook to your API.
+
+        - in: header
+          name: Upstash-Delay
+          schema:
+            type: string
+          required: false
+          description: |
+            Delay the message delivery.
+
+            Format for this header is a number followed by duration abbreviation, like 10s. Available durations are s (seconds), m (minutes), h (hours), d (days).
+
+            Overridden by Upstash-Not-Before if both are provided.
+
+            Example: "50s" | "3m" | "10h" | "1d"
+
+        - in: header
+          name: Upstash-Retries
+          schema:
+            type: integer
+          required: false
+          description: |
+            How often should this message be retried in case the destination API is not available.
+
+            The total number of deliveries is therefore capped at 1 + retries
+
+            Leave this empty to use the default value, (free tier: 3, paid tier: 5)
+
+            The backoff duration in seconds is calculated as follows: n is the number of times the task has been retried.
+
+            Example: min(86400, e ** (2 * n))
+
+        - in: header
+          name: Upstash-Cron
+          schema:
+            type: string
+          required: false
+          description: |
+            Cron allows you to send this message periodically on a schedule.
+
+            Add a Cron expression and we will requeue this message automatically whenever the Cron expression triggers. We offer an easy to use UI for creating Cron expressions in our console or you can check out Crontab.guru.
+
+            Example: "*/5 * * * *"
+
+            It can take up to 60 seconds until the schedule is registered on an available QStash node.
+          
+        - in: header
+          name: Upstash-Callback
+          schema:
+            type: string
+          required: false
+          description: |
+            You can define a callback url that will be called with the response from the destination API.
+
+            Callbacks are experimental, and the API might change in the future!
+
+            The callback url must be prefixed with a valid protocol (http:// or https://) Callbacks are charged as a regular message. Callbacks will use the retry setting from the original request.
+
+        - in: header
+          name: Upstash-Forward-*
+          schema:
+            type: string
+          required: false
+          description: |
+            You can send custom headers along with your message.
+
+            To send a custom header, prefix the header name with Upstash-Forward-. We will strip efix and them to the destination API.
+
+            Example: "Upstash-Forward-My-Header: my-value" -> "My-Header: my-value"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: The raw request message passed to the endpoints as is
+              example: {"message":"Hello, World!"}
+      responses:
+        200:
+          description: Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CreateScheduleResponse"
 
   /schedules/{scheduleId}:
     get:
@@ -253,7 +405,7 @@ components:
     PublishMessageResponse:
       oneOf:
         - $ref: "#/components/schemas/MessageResponse"
-        - $ref: "#/components/schemas/ScheduleMessageResponse"
+        - $ref: "#/components/schemas/MessagesResponse"
     MessageResponse:
       type: object
       required:
@@ -261,7 +413,16 @@ components:
       properties:
         messageId:
           type: string
-    ScheduleMessageResponse:
+    MessagesResponse:
+      type: object
+      required:
+        - messageIds
+      properties:
+        messageIds:
+          type: array
+          items: 
+            type: string
+    CreateScheduleResponse:
       type: object
       required:
         - scheduleId
