@@ -309,7 +309,7 @@ paths:
           name: Upstash-Cron
           schema:
             type: string
-          required: false
+          required: true
           description: |
             Cron allows you to send this message periodically on a schedule.
 
@@ -356,9 +356,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/CreateScheduleResponse"
+                $ref: "#/components/schemas/CreateScheduleResponse"
 
   /schedules/{scheduleId}:
     get:
@@ -433,30 +431,36 @@ components:
       type: object
       example: | 
         {
-          "createdAt": 1692902175969,
-          "id": "scd_5SXLu9x8j7rSc6Rm7F7bfAbpGExm",
-          "cron": "0 2 * * *",
-          "destination": "https://qa1-onboarding.medsimples.dev/api/",
+          "scheduleId": "scd_1234",
+          "createdAt": 1623345678001,
+          "cron": "0 0 1 * *",
+          "destination": "https://example.com",
+          "method": "POST",
           "header": {
-              "Content-Type": {
-                  "values": [
-                      "application/json"
-                  ]
-              }
+            "Content-Type": ["application/json"]
           },
-          "body": "{\"testId\":1}",
+          "body": "{\"message\":\"hello\"}",
           "retries": 3
         }
       required:
         - scheduleId
+        - createdAt
+        - cron
+        - destination
+        - method
+        - header
+        - body
+        - retries
       properties:
         createdAt:
           type: integer
-        id:
+        scheduleId:
           type: string
         cron:
           type: string
         destination:
+          type: string
+        method:
           type: string
         header:
           type: object
