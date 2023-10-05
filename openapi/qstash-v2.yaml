@@ -398,6 +398,91 @@ paths:
         202:
           description: success
 
+  /topics:
+    get:
+      tags:
+        - topics
+      operationId: list
+      security:
+        - bearerAuth: []
+      summary: List all your topics
+      responses:
+        200:
+          description: success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Topic"
+
+  /topics/{topicName}:
+    get:
+      tags:
+        - topics
+      operationId: get
+      security:
+        - bearerAuth: []
+      summary: Retrieves a topic
+      parameters:
+        - in: path
+          name: topicName
+          schema:
+            type: string
+          required: true
+          description: The name of the topic to retrieve.
+      responses:
+        200:
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Topic"
+    delete:
+      tags:
+        - topics
+      operationId: delete
+      security:
+        - bearerAuth: []
+      summary: Remove a topic and all its endpoints
+      parameters:
+        - in: path
+          name: topicName
+          schema:
+            type: string
+          required: true
+          description: The name of the topic to remove.
+      responses:
+        200:
+          description: success
+
+  /topics/{topicName}/endpoints:
+    post:
+      tags:
+        - topics
+      operationId: upsertWithEndpoints
+      security:
+        - bearerAuth: []
+      summary: This endpoint publishes a new message to a topic or directly to a url
+      parameters:
+        - in: path
+          name: topicName
+          schema:
+            type: string
+          required: true
+          description: The name of your topic. If it doesn’t exist yet, it will be created.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpsertTopicRequest"
+
+      responses:
+        200:
+          description: success
+      
+
 components:
   schemas:
     PublishMessageResponse:
@@ -468,6 +553,56 @@ components:
           type: string
         retries:
           type: string
+    UpsertTopicRequest:
+      type: object
+      required:
+        - endpoints
+      properties:
+        endpoints:
+          type: array
+          items:
+            $ref: "#/components/schemas/Endpoint"
+      example: {
+        "endpoints": [
+          {
+            "name": "endpoint1",
+            "url": "https://example.com"
+          },
+          {
+            "name": "endpoint2",
+            "url": "https://somewhere-else.com"
+          }
+        ]
+      }
+    Topic:
+      type: object
+      required:
+        - createdAt
+        - updatedAt
+        - name
+        - endpoints
+      properties:
+        createdAt:
+          type: integer
+        updatedAt:
+          type: integer
+        name:
+          type: string
+        endpoints:
+          type: array
+          items:
+            $ref: "#/components/schemas/Endpoint"
+    Endpoint:
+      type: object
+      required:
+        - name
+        - url
+      properties:
+        name:
+          type: string
+        url:
+          type: string
+        
   securitySchemes:
     bearerAuth:
       type: http
